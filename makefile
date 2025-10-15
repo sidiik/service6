@@ -20,11 +20,11 @@ TEMPO           := grafana/tempo:2.8.1
 LOKI            := grafana/loki:3.5.0
 PROMTAIL        := grafana/promtail:3.5.0
 
-KIND_CLUSTER    := ardan-starter-cluster
+KIND_CLUSTER    := sidiiq-starter-cluster
 NAMESPACE       := sales-system
 SALES_APP       := sales
 AUTH_APP        := auth
-BASE_IMAGE_NAME := localhost/ardanlabs
+BASE_IMAGE_NAME := localhost/sidiiq
 VERSION         := 0.0.1
 SALES_IMAGE     := $(BASE_IMAGE_NAME)/$(SALES_APP):$(VERSION)
 METRICS_IMAGE   := $(BASE_IMAGE_NAME)/metrics:$(VERSION)
