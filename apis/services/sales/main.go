@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"runtime"
@@ -9,6 +10,8 @@ import (
 
 	"github.com/sidiik/service/foundation/logger"
 )
+
+var build = "develop"
 
 func main() {
 	var log *logger.Logger
@@ -23,7 +26,7 @@ func main() {
 		return ""
 	}
 
-	log = logger.NewWithEvents(os.Stdout, logger.LevelInfo, "SALES", traceIDFn, events)
+	log = logger.NewWithEvents(os.Stdout, logger.LevelInfo, fmt.Sprintf("%s:%s", "SALES", build), traceIDFn, events)
 
 	ctx := context.Background()
 

@@ -1,0 +1,33 @@
+FROM golang:1.25 as build_sales
+ENV CGO_ENABLED 0
+ARG BUILD_REF
+
+COPY . /service
+WORKDIR /service/apis/services/sales
+RUN go build -ldflags "-X main.build=${BUILD_REF}"
+
+FROM alpine:latest
+ARG BUILD_REF
+ARG BUILD_DATE
+
+# Explanation: We create a non-root user to run our application for better security, as recommended by best practices and Docker documentation.
+# This user will have a home directory at /home/sales and will be part of the 'sales' group.
+# The command params are as follows:
+    # - 's' creates a system group
+    # - 'H' creates a home directory for the user
+    # - 'D' creates a user with no password (disabled login)
+    # - 'g' specifies the group for the user
+    # - 's' specifies the shell for the user (we use /sbin/nologin to prevent login)ales 
+RUN addgroup -g 1000 -S sales && \
+    adduser -u 1000 -D -S -G sales -h /service -S sales
+COPY --from=build_sales --chown=sales:sales /service/apis/services/sales/sales /service/sales
+WORKDIR /service
+USER sales:sales
+CMD ["./sales"]
+
+LABEL org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.title="sales-api" \
+      org.opencontainers.image.authors="Sidiiq Omar <sidiikpro@gmail.com>" \
+      org.opencontainers.image.source="https://github.com/sidiik/service6/tree/master/apis/services/sales" \
+      org.opencontainers.image.revision="${BUILD_REF}" \
+      org.opencontainers.image.vendor="Sidiiq Omar"

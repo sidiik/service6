@@ -31,6 +31,19 @@ METRICS_IMAGE   := $(BASE_IMAGE_NAME)/metrics:$(VERSION)
 AUTH_IMAGE      := $(BASE_IMAGE_NAME)/$(AUTH_APP):$(VERSION)
 
 # ==============================================================================
+# Building containers
+
+build: sales
+
+sales:
+	docker build \
+		-f zarf/docker/dockerfile.sales \
+		-t $(SALES_IMAGE) \
+		--build-arg BUILD_REF=$(VERSION) \
+		--build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+		.
+
+# ==============================================================================
 # Running from within k8s/kind
 # Docker Desktop 28.3.2 changed how it stores image layers, causing KIND's kind
 # load docker-image command to fail with "content digest not found" errors. The
@@ -63,3 +76,22 @@ dev-status-all:
 
 dev-status:
 	watch -n 2 kubectl get pods -o wide --all-namespaces
+
+# ------------------------------------------------------------------------------
+
+dev-load:
+	kind load docker-image $(SALES_IMAGE) --name $(KIND_CLUSTER)
+
+dev-apply:
+	kustomize build zarf/k8s/dev/sales | kubectl apply -f -
+	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(SALES_APP) --timeout=120s --for=condition=Ready
+
+dev-restart:
+	kubectl rollout restart deployment $(SALES_APP) --namespace=$(NAMESPACE)
+
+dev-update: build dev-load dev-restart
+
+dev-update-apply: build dev-load dev-apply
+
+dev-logs:
+	kubectl logs --namespace=$(NAMESPACE) -l app=$(SALES_APP) --all-containers=true -f --tail=100 --max-log-requests=6
