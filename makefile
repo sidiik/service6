@@ -95,3 +95,6 @@ dev-update-apply: build dev-load dev-apply
 
 dev-logs:
 	kubectl logs --namespace=$(NAMESPACE) -l app=$(SALES_APP) --all-containers=true -f --tail=100 --max-log-requests=6
+
+dev-describe-sales:
+	kubectl describe pods --namespace=$(NAMESPACE) -l app=$(SALES_APP)
